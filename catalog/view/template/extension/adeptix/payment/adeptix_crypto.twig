@@ -1,0 +1,40 @@
+<div id="adeptix-crypto-container">
+  <p>{{ text_description }}</p>
+  <div class="text-end">
+    <button type="button" id="button-confirm" class="btn btn-primary">{{ button_confirm }}</button>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('#button-confirm').on('click', function () {
+    var element = this;
+
+    $.ajax({
+        url: 'index.php?route=extension/adeptix/payment/adeptix_crypto.confirm&language={{ language }}',
+        dataType: 'json',
+        beforeSend: function () {
+            $(element).button('loading');
+        },
+        complete: function () {
+            $(element).button('reset');
+        },
+        success: function (json) {
+            if (json['error']) {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                return;
+            }
+
+            if (json['pay_to_address']) {
+                $('#adeptix-crypto-container').html(
+                    '<h4>{{ text_send_exactly }} <strong>' + json['amount'] + ' ' + json['token'] + '</strong> {{ text_on }} ' + json['chain'] + ' {{ text_to }}</h4>'
+                    + '<p><code>' + json['pay_to_address'] + '</code></p>'
+                    + '<p>{{ text_expires }} ' + json['expires_at'] + '. {{ text_will_update }}</p>'
+                    + '<div class="text-end"><a href="' + json['success_url'] + '" class="btn btn-primary">Continue</a></div>'
+                );
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(thrownError);
+        }
+    });
+});
+//--></script>

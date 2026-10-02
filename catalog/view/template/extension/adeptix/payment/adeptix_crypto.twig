@@ -5,6 +5,18 @@
   </div>
 </div>
 <script type="text/javascript"><!--
+// The confirm endpoint's JSON fields are normally backend-generated, not end-user input, but
+// they're still external data crossing a trust boundary into innerHTML — escaped before use so a
+// future backend change (or a compromised/misbehaving upstream) can't inject markup here.
+function adeptixEscapeHtml(value) {
+    return $('<div>').text(String(value == null ? '' : value)).html();
+}
+
+function adeptixSafeUrl(value) {
+    var url = String(value == null ? '' : value);
+    return /^https?:\/\//i.test(url) ? url : '#';
+}
+
 $('#button-confirm').on('click', function () {
     var element = this;
 
@@ -19,16 +31,16 @@ $('#button-confirm').on('click', function () {
         },
         success: function (json) {
             if (json['error']) {
-                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + adeptixEscapeHtml(json['error']) + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
                 return;
             }
 
             if (json['pay_to_address']) {
                 $('#adeptix-crypto-container').html(
-                    '<h4>{{ text_send_exactly }} <strong>' + json['amount'] + ' ' + json['token'] + '</strong> {{ text_on }} ' + json['chain'] + ' {{ text_to }}</h4>'
-                    + '<p><code>' + json['pay_to_address'] + '</code></p>'
-                    + '<p>{{ text_expires }} ' + json['expires_at'] + '. {{ text_will_update }}</p>'
-                    + '<div class="text-end"><a href="' + json['success_url'] + '" class="btn btn-primary">Continue</a></div>'
+                    '<h4>{{ text_send_exactly }} <strong>' + adeptixEscapeHtml(json['amount']) + ' ' + adeptixEscapeHtml(json['token']) + '</strong> {{ text_on }} ' + adeptixEscapeHtml(json['chain']) + ' {{ text_to }}</h4>'
+                    + '<p><code>' + adeptixEscapeHtml(json['pay_to_address']) + '</code></p>'
+                    + '<p>{{ text_expires }} ' + adeptixEscapeHtml(json['expires_at']) + '. {{ text_will_update }}</p>'
+                    + '<div class="text-end"><a href="' + adeptixSafeUrl(json['success_url']) + '" class="btn btn-primary">Continue</a></div>'
                 );
             }
         },

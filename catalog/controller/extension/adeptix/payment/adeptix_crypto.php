@@ -2,7 +2,7 @@
 
 namespace Opencart\Catalog\Controller\Extension\Adeptix\Payment;
 
-require_once __DIR__ . '/../../../../../vendor/autoload.php'; // this extension's bundled Adeptix SDK
+require_once __DIR__ . '/../../../../../vendor/autoload.php';
 
 use Adeptix\AdeptixClient;
 use Adeptix\Exceptions\AdeptixApiException;
@@ -101,7 +101,8 @@ class AdeptixCrypto extends \Opencart\System\Engine\Controller
         }
 
         $event = json_decode($rawBody, true);
-        if (is_array($event) && ($event['event'] ?? null) === 'crypto_payment.matched' && isset($event['order_ref'])) {
+        // See adeptix_merchant.php's webhook() for why test_mode is checked here too.
+        if (is_array($event) && ($event['event'] ?? null) === 'crypto_payment.matched' && isset($event['order_ref']) && empty($event['test_mode'])) {
             $this->load->model('checkout/order');
             $orderId = (int) $event['order_ref'];
             $order = $this->model_checkout_order->getOrder($orderId);

@@ -3,10 +3,15 @@
   <button type="button" id="button-confirm" class="btn btn-primary">{{ button_confirm }}</button>
 </div>
 <script type="text/javascript"><!--
-// See adeptix_crypto.twig's own copy of this helper for why error text crossing the AJAX
-// boundary is escaped before going into innerHTML even though it's normally backend-generated.
+// See adeptix_crypto.twig's own copy of these helpers for why values crossing the AJAX boundary
+// are escaped/validated before use even though they're normally backend-generated.
 function adeptixEscapeHtml(value) {
     return $('<div>').text(String(value == null ? '' : value)).html();
+}
+
+function adeptixSafeUrl(value) {
+    var url = String(value == null ? '' : value);
+    return /^https?:\/\//i.test(url) ? url : '#';
 }
 
 $('#button-confirm').on('click', function () {
@@ -27,7 +32,7 @@ $('#button-confirm').on('click', function () {
             }
 
             if (json['redirect']) {
-                location = json['redirect'];
+                location = adeptixSafeUrl(json['redirect']);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
